@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editorial Style Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a18;
+    --ink-2: #4a4a45;
+    --ink-3: #8a8a82;
+    --paper: #faf9f6;
+    --paper-2: #f2f0eb;
+    --paper-3: #e8e5de;
+    --rule: rgba(26,26,24,0.15);
+    --rule-strong: rgba(26,26,24,0.35);
+    --accent: #1a1a18;
+    --success: #0f6e56;
+    --info: #185fa5;
+    --warn: #854f0b;
+    --danger: #993c1d;
+    --purple: #3c3489;
+    --teal: #0f6e56;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #f0ede6;
+      --ink-2: #b8b5ae;
+      --ink-3: #6a6860;
+      --paper: #1a1916;
+      --paper-2: #222118;
+      --paper-3: #2c2b22;
+      --rule: rgba(240,237,230,0.12);
+      --rule-strong: rgba(240,237,230,0.3);
+    }
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 1.5rem 2rem 1rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .masthead-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .masthead-sub {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-top: 3px;
+    font-family: 'Source Serif 4', sans-serif;
+    font-weight: 300;
+  }
+
+  /* ── API KEY BAR ── */
+  .api-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .api-bar label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .api-input {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    border: 0.5px solid var(--rule-strong);
+    border-radius: 5px;
+    background: var(--paper-2);
+    color: var(--ink);
+    width: 260px;
+  }
+  .api-input:focus { outline: none; border-color: var(--ink); }
+  .api-save-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+    border: 0.5px solid var(--rule-strong);
+    border-radius: 5px;
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    font-family: 'Source Serif 4', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .api-save-btn:hover { opacity: 0.8; }
+  .api-status { font-size: 11px; color: var(--success); font-style: italic; }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    border-bottom: 0.5px solid var(--rule);
+    padding-bottom: 0.5rem;
+  }
+
+  /* ── STYLE GRID ── */
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .style-card {
+    border: 0.5px solid var(--rule);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: var(--paper);
+  }
+  .style-card:hover { border-color: var(--rule-strong); background: var(--paper-2); }
+  .style-card.selected { border: 2px solid var(--ink); background: var(--paper-2); }
+  .style-card-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 7px;
+    font-weight: 600;
+  }
+  .tag-news    { background: #e6f1fb; color: #0c447c; }
+  .tag-science { background: #eaf3de; color: #27500a; }
+  .tag-business{ background: #faeeda; color: #633806; }
+  .tag-tech    { background: #faece7; color: #712b13; }
+  .tag-africa  { background: #e1f5ee; color: #085041; }
+  .tag-finance { background: #eeedfe; color: #26215c; }
+  .tag-policy  { background: #faeeda; color: #633806; }
+  @media (prefers-color-scheme: dark) {
+    .tag-news    { background: #0c447c; color: #b5d4f4; }
+    .tag-science { background: #173404; color: #c0dd97; }
+    .tag-business{ background: #412402; color: #fac775; }
+    .tag-tech    { background: #4a1b0c; color: #f0997b; }
+    .tag-africa  { background: #04342c; color: #9fe1cb; }
+    .tag-finance { background: #26215c; color: #cecc f6; }
+    .tag-policy  { background: #412402; color: #fac775; }
+  }
+  .style-card-pub {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .style-card-desc {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* ── INPUT AREA ── */
+  .input-section { margin-bottom: 1.5rem; }
+  textarea {
+    width: 100%;
+    border: 0.5px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 14px;
+    line-height: 1.8;
+    background: var(--paper);
+    color: var(--ink);
+    resize: vertical;
+    min-height: 200px;
+    margin-bottom: 1rem;
+    transition: border-color 0.15s;
+  }
+  textarea:focus { outline: none; border-color: var(--ink); }
+
+  /* ── ACTION ROW ── */
+  .action-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .run-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 8px;
+    padding: 11px 22px;
+    font-family: 'Source Serif 4', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.15s;
+  }
+  .run-btn:hover { opacity: 0.82; }
+  .run-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .clear-btn {
+    font-size: 13px;
+    padding: 10px 16px;
+    border: 0.5px solid var(--rule-strong);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    font-family: 'Source Serif 4', sans-serif;
+  }
+  .clear-btn:hover { color: var(--ink); border-color: var(--ink); }
+  .status-line {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    font-style: italic;
+    min-height: 20px;
+  }
+
+  /* ── DIVIDER ── */
+  .rule { border: none; border-top: 0.5px solid var(--rule); margin: 2rem 0; }
+  .rule-strong { border: none; border-top: 2px solid var(--ink); margin: 2rem 0 1.5rem; }
+
+  /* ── OUTPUT ── */
+  .output-label {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+  }
+  .output-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 720px) { .output-grid { grid-template-columns: 1fr; } }
+
+  .output-panel {
+    border: 0.5px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+  }
+  .output-panel-header {
+    padding: 10px 14px;
+    border-bottom: 0.5px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .output-panel-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .output-panel-body {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.85;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    max-height: 520px;
+    flex: 1;
+    color: var(--ink);
+  }
+  .memo-panel-body {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    background: var(--paper-2);
+    border-radius: 0 0 8px 8px;
+  }
+  .copy-btn {
+    font-size: 11px;
+    color: var(--ink-3);
+    background: none;
+    border: 0.5px solid var(--rule);
+    border-radius: 4px;
+    padding: 3px 9px;
+    cursor: pointer;
+    font-family: 'Source Serif 4', sans-serif;
+    transition: all 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .copy-btn:hover { color: var(--ink); border-color: var(--rule-strong); }
+
+  .placeholder-text {
+    color: var(--ink-3);
+    font-style: italic;
+    font-size: 13px;
+    padding: 2.5rem;
+    text-align: center;
+  }
+
+  /* ── LOADING ── */
+  .loading-pulse {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--ink-3);
+    font-style: italic;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 0.5px solid var(--rule);
+    margin-top: 3rem;
+    padding: 1rem 2rem;
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="masthead-title">Editorial Style Agent</div>
+    <div class="masthead-sub">AI-Powered Editor-in-Chief &mdash; Powered by Claude</div>
+  </div>
+  <div class="api-bar">
+    <label for="apiKeyInput"><i class="ti ti-key" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> API Key</label>
+    <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+    <button class="api-save-btn" onclick="saveKey()"><i class="ti ti-device-floppy" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Save</button>
+    <span class="api-status" id="apiStatus"></span>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label" style="margin-top:0.5rem">Select Publication Style</div>
+  <div class="style-grid" id="styleGrid"></div>
+
+  <div class="input-section">
+    <div class="section-label">Your Draft Article</div>
+    <textarea id="articleInput" placeholder="Paste your draft article here...&#10;&#10;The editor will rewrite it to match your selected publication's voice, structure, and editorial standards — then deliver a detailed Editor's Memo explaining every change."></textarea>
+    <div class="action-row">
+      <button class="run-btn" id="runBtn" onclick="runEditor()">
+        <i class="ti ti-pencil" style="font-size:16px" aria-hidden="true"></i> Edit Article
+      </button>
+      <button class="clear-btn" onclick="clearAll()">
+        <i class="ti ti-trash" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> Clear
+      </button>
+      <span class="status-line" id="statusLine"></span>
+    </div>
+  </div>
+
+  <div id="outputSection" style="display:none">
+    <hr class="rule-strong">
+    <div class="output-label" id="outputLabel">Edited Article</div>
+    <div class="output-grid">
+      <div class="output-panel">
+        <div class="output-panel-header">
+          <span class="output-panel-title"><i class="ti ti-file-text" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Edited Article</span>
+          <button class="copy-btn" onclick="copyText('editedArticle')"><i class="ti ti-copy" style="font-size:13px" aria-hidden="true"></i> Copy</button>
+        </div>
+        <div class="output-panel-body" id="editedArticle">
+          <div class="placeholder-text">Your edited article will appear here.</div>
+        </div>
+      </div>
+      <div class="output-panel">
+        <div class="output-panel-header">
+          <span class="output-panel-title"><i class="ti ti-notes" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Editor's Memo</span>
+          <button class="copy-btn" onclick="copyText('editorMemo')"><i class="ti ti-copy" style="font-size:13px" aria-hidden="true"></i> Copy</button>
+        </div>
+        <div class="output-panel-body memo-panel-body" id="editorMemo">
+          <div class="placeholder-text">Editorial notes will appear here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>Editorial Style Agent &mdash; Built with Claude Sonnet &mdash; For personal and institutional use</footer>
+
+<script>
+const STYLES = [
+  {
+    id:'wapo', tag:'News', tagClass:'tag-news', pub:'Washington Post',
+    desc:'Narrative, authoritative, public-interest journalism',
+    prompt:`You are the Editor-in-Chief of The Washington Post. Your editorial standards are exacting: authoritative yet accessible prose, the inverted pyramid for hard news, narrative-first for features. Strong ledes that earn the reader's trust in the first sentence. AP Style throughout. Headlines are declarative and active. Attribution is precise. Every paragraph earns its place. Cut passive voice, eliminate jargon, enforce show-don't-tell for colour, and demand clear transitions. Paragraphs are 2–3 sentences. You never bury the lede.`
+  },
+  {
+    id:'economist', tag:'Policy', tagClass:'tag-policy', pub:'The Economist',
+    desc:'Analytical, opinionated, pithy — every sentence counts',
+    prompt:`You are the Editor-in-Chief of The Economist. Precise, witty, unapologetically opinionated on the basis of evidence. Active voice almost exclusively. Short, punchy sentences. Elegant paradoxes and well-placed irony. Never use the first person. Prefer "says" over "stated". Headlines are clever, often using wordplay. Subheadings are single-line summaries. Cut redundancy ruthlessly. Challenge every claim for specificity. Complex ideas get one clarifying analogy. The "turnaround" — the unexpected angle — is your signature.`
+  },
+  {
+    id:'nature', tag:'Science', tagClass:'tag-science', pub:'Nature News',
+    desc:'Evidence-first science storytelling for expert audiences',
+    prompt:`You are the Chief Editor of Nature News & Views. Rigorous science communication for a highly educated audience. Lead with the finding, then its significance, then the method. Claims require attribution to named researchers. Challenge vague language like "could" or "may" — replace with precise epistemic qualifiers. Consistent SI units and statistical framing. Jargon is acceptable but defined on first use. Headlines state the finding directly. Guard against hype and overstatement above all else.`
+  },
+  {
+    id:'mit', tag:'Tech', tagClass:'tag-tech', pub:'MIT Tech Review',
+    desc:'Deep tech, innovation-focused, accessible to educated non-specialists',
+    prompt:`You are the Editor-in-Chief of MIT Technology Review. Technology with depth and nuance for intelligent non-specialists. Contextualise every technology claim within broader scientific, economic, or social systems. Challenge breathless tech hype with historical context. Ledes start with a concrete human or industrial scenario — not an abstract concept. Short paragraphs, smart subheadings. Define technical terms on first introduction. Always ask "so what?" — and answer it.`
+  },
+  {
+    id:'ft', tag:'Finance', tagClass:'tag-finance', pub:'Financial Times',
+    desc:'Refined business prose — precise, global, investment-grade',
+    prompt:`You are the Editor-in-Chief of the Financial Times. Authoritative, measured, globally-minded business journalism. Restrained, declarative sentences with no hyperbole. Numbers must always be contextualised — year-on-year, sector benchmark, or regional comparison. Consistent currency symbols and financial terminology. Attribution names job titles and organisations precisely. Headlines are factual statements. Oxford comma throughout. Eliminate all clichés ("game-changer", "paradigm shift", "unprecedented") and replace with specific evidence. Corporate speak is your enemy.`
+  },
+  {
+    id:'africabiz', tag:'Africa', tagClass:'tag-africa', pub:'African Business',
+    desc:'Africa-focused, development economics, business growth narrative',
+    prompt:`You are the Editor-in-Chief of African Business Magazine. Tell African business stories with authenticity, economic rigour, and evidence-grounded optimism. Contextualise within intra-African trade (AfCFTA), demographic trends, and sectoral investment flows. Avoid the deficit narrative and "Africa rising" clichés equally. Name countries, cities, and institutions specifically. Prefer African entrepreneurial and policy protagonists over foreign investors as primary actors. Economic data must be sourced (World Bank, AfDB, national statistics). Your reader is an African executive, policymaker, or investor.`
+  },
+  {
+    id:'techcrunch', tag:'Tech', tagClass:'tag-tech', pub:'TechCrunch',
+    desc:'Startup & VC lens — punchy, fast, founder-first',
+    prompt:`You are the Editor-in-Chief of TechCrunch. Fast, punchy, startup-centric. Ledes are one or two sentences max and land the news immediately. Funding stories must say: how much was raised, at what valuation, who led the round. Explain "why now" and "who are the competitors" within the first 200 words. Cut every sentence that adds no new information. Subheadings are punchy and conversational. Present tense wherever possible. Prefer concrete product details over vision statements. Sceptical of claims but reports them fairly.`
+  },
+  {
+    id:'devfinance', tag:'Finance', tagClass:'tag-finance', pub:'Development Finance',
+    desc:'Impact investing, DFI & blended finance report style',
+    prompt:`You are the Chief Editor of a leading development finance publication (think: IFC Insights, OECD Development Co-operation Report, or AVCA Quarterly). Every financing claim must cite instrument type (grant, equity, debt, guarantee), ticket size, and geography. Use blended finance, catalytic capital, and DFI terminology precisely — define on first use. Every piece must answer: what is the development outcome, what was the financing structure, and what is replicable? Avoid advocacy language — replace with outcome evidence. The reader is an institutional investor, DFI officer, or development economist.`
+  }
+];
+
+let selectedStyle = null;
+
+function renderStyles() {
+  const grid = document.getElementById('styleGrid');
+  grid.innerHTML = STYLES.map(s => `
+    <div class="style-card" id="card-${s.id}" onclick="selectStyle('${s.id}')" role="button" tabindex="0" aria-label="Select ${s.pub} style">
+      <span class="style-card-tag ${s.tagClass}">${s.tag}</span>
+      <div class="style-card-pub">${s.pub}</div>
+      <div class="style-card-desc">${s.desc}</div>
+    </div>`).join('');
+}
+
+function selectStyle(id) {
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + id).classList.add('selected');
+  selectedStyle = STYLES.find(s => s.id === id);
+}
+
+function saveKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) return;
+  localStorage.setItem('esa_api_key', key);
+  document.getElementById('apiStatus').textContent = 'Key saved.';
+  setTimeout(() => document.getElementById('apiStatus').textContent = '', 3000);
+}
+
+function loadKey() {
+  const saved = localStorage.getItem('esa_api_key');
+  if (saved) {
+    document.getElementById('apiKeyInput').value = saved;
+    document.getElementById('apiStatus').textContent = 'Key loaded.';
+    setTimeout(() => document.getElementById('apiStatus').textContent = '', 2000);
+  }
+}
+
+function getKey() {
+  return document.getElementById('apiKeyInput').value.trim() || localStorage.getItem('esa_api_key') || '';
+}
+
+function clearAll() {
+  document.getElementById('articleInput').value = '';
+  document.getElementById('outputSection').style.display = 'none';
+  setStatus('');
+}
+
+function setStatus(msg) { document.getElementById('statusLine').textContent = msg; }
+
+async function runEditor() {
+  const article = document.getElementById('articleInput').value.trim();
+  const apiKey = getKey();
+  if (!apiKey) { setStatus('Please enter and save your Anthropic API key first.'); return; }
+  if (!article) { setStatus('Please paste a draft article first.'); return; }
+  if (!selectedStyle) { setStatus('Please select a publication style first.'); return; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  setStatus('Sending to the editor...');
+  document.getElementById('outputSection').style.display = 'block';
+  document.getElementById('editedArticle').innerHTML = '<span class="loading-pulse">Editor is working through your draft...</span>';
+  document.getElementById('editorMemo').innerHTML = '<span class="loading-pulse">Preparing editorial notes...</span>';
+
+  const systemPrompt = selectedStyle.prompt + `
+
+TASK: You are reviewing a submitted article draft. Edit it and produce a memo.
+
+FORMAT YOUR RESPONSE EXACTLY AS FOLLOWS — use these exact delimiters:
+===EDITED ARTICLE===
+[Your fully edited article here]
+
+===EDITOR'S MEMO===
+MEMO TO: Author
+FROM: Editor-in-Chief, ${selectedStyle.pub}
+RE: [article headline]
+DATE: ${new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'})}
+
+[Numbered editorial notes explaining every significant change and why. Reference specific sentences or paragraphs. Be direct. End with a verdict: ACCEPT / REVISE and brief reason.]`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Please edit this article:\n\n${article}` }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const text = data.content.map(b => b.type === 'text' ? b.text : '').join('');
+    const parts = text.split("===EDITOR'S MEMO===");
+    const editedRaw = parts[0].replace('===EDITED ARTICLE===', '').trim();
+    const memoRaw = parts[1] ? parts[1].trim() : 'No memo returned.';
+
+    document.getElementById('editedArticle').textContent = editedRaw;
+    document.getElementById('editorMemo').textContent = memoRaw;
+    document.getElementById('outputLabel').textContent = `Edited to ${selectedStyle.pub} Standards`;
+    setStatus(`Done. Article edited to ${selectedStyle.pub} standards.`);
+
+  } catch (e) {
+    document.getElementById('editedArticle').textContent = 'Error: ' + e.message;
+    document.getElementById('editorMemo').textContent = 'Please check your API key and try again.';
+    setStatus('Something went wrong — see output panel.');
+  }
+
+  btn.disabled = false;
+}
+
+async function copyText(id) {
+  const t = document.getElementById(id).textContent;
+  try {
+    await navigator.clipboard.writeText(t);
+    setStatus('Copied to clipboard.');
+    setTimeout(() => setStatus(''), 2500);
+  } catch {
+    setStatus('Could not copy — please select and copy manually.');
+  }
+}
+
+renderStyles();
+loadKey();
+</script>
+</body>
+</html>

@@ -5,587 +5,445 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Editorial Style Agent</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --ink: #1a1a18;
-    --ink-2: #4a4a45;
-    --ink-3: #8a8a82;
-    --paper: #faf9f6;
-    --paper-2: #f2f0eb;
-    --paper-3: #e8e5de;
-    --rule: rgba(26,26,24,0.15);
-    --rule-strong: rgba(26,26,24,0.35);
-    --accent: #1a1a18;
-    --success: #0f6e56;
-    --info: #185fa5;
-    --warn: #854f0b;
-    --danger: #993c1d;
-    --purple: #3c3489;
-    --teal: #0f6e56;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ink: #f0ede6;
-      --ink-2: #b8b5ae;
-      --ink-3: #6a6860;
-      --paper: #1a1916;
-      --paper-2: #222118;
-      --paper-3: #2c2b22;
-      --rule: rgba(240,237,230,0.12);
-      --rule-strong: rgba(240,237,230,0.3);
-    }
-  }
-
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    font-size: 16px;
-    line-height: 1.7;
-    min-height: 100vh;
-  }
-
-  /* ── HEADER ── */
-  header {
-    border-bottom: 2px solid var(--ink);
-    padding: 1.5rem 2rem 1rem;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .masthead-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  .masthead-sub {
-    font-size: 11px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin-top: 3px;
-    font-family: 'Source Serif 4', sans-serif;
-    font-weight: 300;
-  }
-
-  /* ── API KEY BAR ── */
-  .api-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .api-bar label {
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    font-weight: 600;
-  }
-  .api-input {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    padding: 6px 10px;
-    border: 0.5px solid var(--rule-strong);
-    border-radius: 5px;
-    background: var(--paper-2);
-    color: var(--ink);
-    width: 260px;
-  }
-  .api-input:focus { outline: none; border-color: var(--ink); }
-  .api-save-btn {
-    font-size: 11px;
-    padding: 6px 12px;
-    border: 0.5px solid var(--rule-strong);
-    border-radius: 5px;
-    background: var(--ink);
-    color: var(--paper);
-    cursor: pointer;
-    font-family: 'Source Serif 4', sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-  .api-save-btn:hover { opacity: 0.8; }
-  .api-status { font-size: 11px; color: var(--success); font-style: italic; }
-
-  /* ── MAIN LAYOUT ── */
-  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-
-  .section-label {
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    border-bottom: 0.5px solid var(--rule);
-    padding-bottom: 0.5rem;
-  }
-
-  /* ── STYLE GRID ── */
-  .style-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 10px;
-    margin-bottom: 2rem;
-  }
-  .style-card {
-    border: 0.5px solid var(--rule);
-    border-radius: 8px;
-    padding: 12px 14px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    background: var(--paper);
-  }
-  .style-card:hover { border-color: var(--rule-strong); background: var(--paper-2); }
-  .style-card.selected { border: 2px solid var(--ink); background: var(--paper-2); }
-  .style-card-tag {
-    display: inline-block;
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 3px;
-    margin-bottom: 7px;
-    font-weight: 600;
-  }
-  .tag-news    { background: #e6f1fb; color: #0c447c; }
-  .tag-science { background: #eaf3de; color: #27500a; }
-  .tag-business{ background: #faeeda; color: #633806; }
-  .tag-tech    { background: #faece7; color: #712b13; }
-  .tag-africa  { background: #e1f5ee; color: #085041; }
-  .tag-finance { background: #eeedfe; color: #26215c; }
-  .tag-policy  { background: #faeeda; color: #633806; }
-  @media (prefers-color-scheme: dark) {
-    .tag-news    { background: #0c447c; color: #b5d4f4; }
-    .tag-science { background: #173404; color: #c0dd97; }
-    .tag-business{ background: #412402; color: #fac775; }
-    .tag-tech    { background: #4a1b0c; color: #f0997b; }
-    .tag-africa  { background: #04342c; color: #9fe1cb; }
-    .tag-finance { background: #26215c; color: #cecc f6; }
-    .tag-policy  { background: #412402; color: #fac775; }
-  }
-  .style-card-pub {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: var(--ink);
-  }
-  .style-card-desc {
-    font-size: 11.5px;
-    color: var(--ink-2);
-    line-height: 1.5;
-    font-weight: 300;
-  }
-
-  /* ── INPUT AREA ── */
-  .input-section { margin-bottom: 1.5rem; }
-  textarea {
-    width: 100%;
-    border: 0.5px solid var(--rule);
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 14px;
-    line-height: 1.8;
-    background: var(--paper);
-    color: var(--ink);
-    resize: vertical;
-    min-height: 200px;
-    margin-bottom: 1rem;
-    transition: border-color 0.15s;
-  }
-  textarea:focus { outline: none; border-color: var(--ink); }
-
-  /* ── ACTION ROW ── */
-  .action-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .run-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    border-radius: 8px;
-    padding: 11px 22px;
-    font-family: 'Source Serif 4', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: opacity 0.15s;
-  }
-  .run-btn:hover { opacity: 0.82; }
-  .run-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .clear-btn {
-    font-size: 13px;
-    padding: 10px 16px;
-    border: 0.5px solid var(--rule-strong);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--ink-2);
-    cursor: pointer;
-    font-family: 'Source Serif 4', sans-serif;
-  }
-  .clear-btn:hover { color: var(--ink); border-color: var(--ink); }
-  .status-line {
-    font-size: 12.5px;
-    color: var(--ink-3);
-    font-style: italic;
-    min-height: 20px;
-  }
-
-  /* ── DIVIDER ── */
-  .rule { border: none; border-top: 0.5px solid var(--rule); margin: 2rem 0; }
-  .rule-strong { border: none; border-top: 2px solid var(--ink); margin: 2rem 0 1.5rem; }
-
-  /* ── OUTPUT ── */
-  .output-label {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-    font-style: italic;
-  }
-  .output-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  @media (max-width: 720px) { .output-grid { grid-template-columns: 1fr; } }
-
-  .output-panel {
-    border: 0.5px solid var(--rule);
-    border-radius: 8px;
-    background: var(--paper);
-    display: flex;
-    flex-direction: column;
-  }
-  .output-panel-header {
-    padding: 10px 14px;
-    border-bottom: 0.5px solid var(--rule);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .output-panel-title {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    font-weight: 600;
-  }
-  .output-panel-body {
-    padding: 16px;
-    font-size: 14px;
-    line-height: 1.85;
-    white-space: pre-wrap;
-    overflow-y: auto;
-    max-height: 520px;
-    flex: 1;
-    color: var(--ink);
-  }
-  .memo-panel-body {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    line-height: 1.8;
-    background: var(--paper-2);
-    border-radius: 0 0 8px 8px;
-  }
-  .copy-btn {
-    font-size: 11px;
-    color: var(--ink-3);
-    background: none;
-    border: 0.5px solid var(--rule);
-    border-radius: 4px;
-    padding: 3px 9px;
-    cursor: pointer;
-    font-family: 'Source Serif 4', sans-serif;
-    transition: all 0.1s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .copy-btn:hover { color: var(--ink); border-color: var(--rule-strong); }
-
-  .placeholder-text {
-    color: var(--ink-3);
-    font-style: italic;
-    font-size: 13px;
-    padding: 2.5rem;
-    text-align: center;
-  }
-
-  /* ── LOADING ── */
-  .loading-pulse {
-    display: inline-block;
-    font-size: 13px;
-    color: var(--ink-3);
-    font-style: italic;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 0.5px solid var(--rule);
-    margin-top: 3rem;
-    padding: 1rem 2rem;
-    text-align: center;
-    font-size: 11px;
-    color: var(--ink-3);
-    letter-spacing: 1px;
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a18;--ink-2:#4a4a45;--ink-3:#8a8a82;
+  --paper:#faf9f6;--paper-2:#f2f0eb;--paper-3:#e8e5de;
+  --rule:rgba(26,26,24,0.13);--rule-strong:rgba(26,26,24,0.3);
+  --success:#0f6e56;--danger:#993c1d;--radius:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{--ink:#f0ede6;--ink-2:#b8b5ae;--ink-3:#6a6860;--paper:#1a1916;--paper-2:#222118;--paper-3:#2c2b22;--rule:rgba(240,237,230,0.1);--rule-strong:rgba(240,237,230,0.28);}
+}
+body{background:var(--paper);color:var(--ink);font-family:'Source Serif 4',Georgia,serif;font-size:15px;line-height:1.7}
+header{border-bottom:2px solid var(--ink);padding:1.25rem 2rem 1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.masthead-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px}
+.masthead-sub{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-3);margin-top:3px;font-weight:300}
+.api-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.api-bar label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.api-input{font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 10px;border:0.5px solid var(--rule-strong);border-radius:5px;background:var(--paper-2);color:var(--ink);width:240px}
+.api-input:focus{outline:none;border-color:var(--ink)}
+.api-save-btn{font-size:11px;padding:6px 12px;border:none;border-radius:5px;background:var(--ink);color:var(--paper);cursor:pointer;font-weight:600;letter-spacing:0.5px}
+.api-save-btn:hover{opacity:0.8}
+.api-status{font-size:11px;color:var(--success);font-style:italic}
+main{max-width:1200px;margin:0 auto;padding:1.5rem 2rem 3rem}
+.section-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-3);margin-bottom:0.75rem;font-weight:600;border-bottom:0.5px solid var(--rule);padding-bottom:0.4rem}
+.style-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;margin-bottom:1rem}
+.style-card{border:0.5px solid var(--rule);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:all 0.15s;background:var(--paper)}
+.style-card:hover{border-color:var(--rule-strong);background:var(--paper-2)}
+.style-card.selected{border:2px solid var(--ink);background:var(--paper-2)}
+.style-card-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-bottom:6px;font-weight:600}
+.tag-news{background:#e6f1fb;color:#0c447c}
+.tag-science{background:#eaf3de;color:#27500a}
+.tag-policy{background:#faeeda;color:#633806}
+.tag-tech{background:#faece7;color:#712b13}
+.tag-africa{background:#e1f5ee;color:#085041}
+.tag-finance{background:#eeedfe;color:#26215c}
+.style-card-pub{font-family:'Playfair Display',serif;font-size:13.5px;font-weight:600;margin-bottom:3px}
+.style-card-desc{font-size:11px;color:var(--ink-2);line-height:1.45;font-weight:300}
+.style-guide-panel{border:1px solid var(--ink);border-radius:var(--radius);background:var(--paper-2);padding:1.25rem 1.5rem;margin-bottom:1.75rem;display:none}
+.style-guide-panel.open{display:block}
+.style-guide-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:0.5px solid var(--rule-strong)}
+.style-guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.guide-block{background:var(--paper);border:0.5px solid var(--rule);border-radius:6px;padding:10px 13px}
+.guide-block-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:6px}
+.guide-block-body{font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.guide-block-body strong{color:var(--ink);font-weight:600}
+.image-manager{margin-bottom:1.75rem}
+.image-list{display:flex;flex-direction:column;gap:10px;margin-bottom:0.75rem}
+.image-row{display:flex;align-items:flex-start;gap:10px;background:var(--paper-2);border:0.5px solid var(--rule);border-radius:var(--radius);padding:10px 12px;flex-wrap:wrap}
+.image-label-badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;background:var(--ink);color:var(--paper);padding:3px 9px;border-radius:4px;white-space:nowrap;margin-top:2px}
+.image-thumb{width:60px;height:50px;object-fit:cover;border-radius:4px;border:0.5px solid var(--rule);flex-shrink:0}
+.image-thumb-placeholder{width:60px;height:50px;border:0.5px dashed var(--rule-strong);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-3);flex-shrink:0;text-align:center;line-height:1.3}
+.image-fields{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px}
+.img-url-row{display:flex;gap:6px}
+.field-input{border:0.5px solid var(--rule);border-radius:5px;padding:6px 10px;font-family:'Source Serif 4',serif;font-size:13px;background:var(--paper);color:var(--ink);width:100%}
+.field-input:focus{outline:none;border-color:var(--ink)}
+.field-input.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px}
+.caption-input{resize:vertical;min-height:42px;font-size:13px}
+.remove-btn{font-size:11px;padding:5px 10px;border:0.5px solid var(--rule-strong);border-radius:5px;background:transparent;color:var(--ink-3);cursor:pointer;white-space:nowrap;align-self:flex-start}
+.remove-btn:hover{color:var(--danger);border-color:var(--danger)}
+.add-img-btn{font-size:12px;padding:7px 14px;border:0.5px dashed var(--rule-strong);border-radius:5px;background:transparent;color:var(--ink-2);cursor:pointer;font-family:'Source Serif 4',serif;display:inline-flex;align-items:center;gap:6px}
+.add-img-btn:hover{border-color:var(--ink);color:var(--ink)}
+textarea{width:100%;border:0.5px solid var(--rule);border-radius:var(--radius);padding:13px 15px;font-family:'Source Serif 4',serif;font-size:14px;line-height:1.8;background:var(--paper);color:var(--ink);resize:vertical;min-height:200px;margin-bottom:1rem}
+textarea:focus{outline:none;border-color:var(--ink)}
+.action-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:0.5rem}
+.run-btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper);border:none;border-radius:var(--radius);padding:10px 22px;font-family:'Source Serif 4',serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;transition:opacity 0.15s}
+.run-btn:hover{opacity:0.82}
+.run-btn:disabled{opacity:0.35;cursor:not-allowed}
+.ghost-btn{font-size:13px;padding:9px 15px;border:0.5px solid var(--rule-strong);border-radius:var(--radius);background:transparent;color:var(--ink-2);cursor:pointer;font-family:'Source Serif 4',serif}
+.ghost-btn:hover{color:var(--ink);border-color:var(--ink)}
+.status-line{font-size:12.5px;color:var(--ink-3);font-style:italic;min-height:20px}
+.rule-strong{border:none;border-top:2px solid var(--ink);margin:2rem 0 1.5rem}
+.output-label{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;margin-bottom:1.25rem;font-style:italic}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule-strong);margin-bottom:1.25rem}
+.tab-btn{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border:none;background:transparent;color:var(--ink-3);cursor:pointer;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px;font-family:'Source Serif 4',serif;transition:all 0.15s}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--ink);border-bottom:3px solid var(--ink)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.output-panel{border:0.5px solid var(--rule);border-radius:var(--radius);background:var(--paper)}
+.output-panel-header{padding:9px 14px;border-bottom:0.5px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.output-panel-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.panel-btns{display:flex;gap:6px}
+.copy-btn{font-size:11px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:4px;padding:3px 9px;cursor:pointer;font-family:'Source Serif 4',serif;display:inline-flex;align-items:center;gap:4px;transition:all 0.1s}
+.copy-btn:hover{color:var(--ink);border-color:var(--rule-strong)}
+.preview-btn{font-size:11px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:4px;padding:3px 9px;cursor:pointer;font-family:'Source Serif 4',serif;display:inline-flex;align-items:center;gap:4px}
+.preview-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.output-body{padding:16px;font-size:14px;line-height:1.85;white-space:pre-wrap;overflow-y:auto;max-height:560px;color:var(--ink)}
+.output-body.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8;background:var(--paper-2);border-radius:0 0 var(--radius) var(--radius)}
+.preview-frame{width:100%;min-height:400px;border:none;border-radius:0 0 var(--radius) var(--radius);background:white}
+.placeholder-text{color:var(--ink-3);font-style:italic;font-size:13px;padding:2.5rem;text-align:center}
+.loading-pulse{display:inline-block;font-size:13px;color:var(--ink-3);font-style:italic;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.35}50%{opacity:1}}
+footer{border-top:0.5px solid var(--rule);padding:1rem 2rem;text-align:center;font-size:11px;color:var(--ink-3);letter-spacing:1px}
+@media(max-width:680px){header{flex-direction:column;align-items:flex-start}main{padding:1rem}.style-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-
 <header>
   <div>
     <div class="masthead-title">Editorial Style Agent</div>
     <div class="masthead-sub">AI-Powered Editor-in-Chief &mdash; Powered by Claude</div>
   </div>
   <div class="api-bar">
-    <label for="apiKeyInput"><i class="ti ti-key" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> API Key</label>
+    <label for="apiKeyInput">&#128273; API Key</label>
     <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
-    <button class="api-save-btn" onclick="saveKey()"><i class="ti ti-device-floppy" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Save</button>
+    <button class="api-save-btn" onclick="saveKey()">Save</button>
     <span class="api-status" id="apiStatus"></span>
   </div>
 </header>
-
 <main>
-
-  <div class="section-label" style="margin-top:0.5rem">Select Publication Style</div>
+  <div style="margin-top:0.5rem" class="section-label">Select Publication Style</div>
   <div class="style-grid" id="styleGrid"></div>
-
-  <div class="input-section">
-    <div class="section-label">Your Draft Article</div>
-    <textarea id="articleInput" placeholder="Paste your draft article here...&#10;&#10;The editor will rewrite it to match your selected publication's voice, structure, and editorial standards — then deliver a detailed Editor's Memo explaining every change."></textarea>
-    <div class="action-row">
-      <button class="run-btn" id="runBtn" onclick="runEditor()">
-        <i class="ti ti-pencil" style="font-size:16px" aria-hidden="true"></i> Edit Article
-      </button>
-      <button class="clear-btn" onclick="clearAll()">
-        <i class="ti ti-trash" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> Clear
-      </button>
-      <span class="status-line" id="statusLine"></span>
-    </div>
+  <div class="style-guide-panel" id="styleGuidePanel">
+    <div class="style-guide-title" id="styleGuideTitle"></div>
+    <div class="style-guide-grid" id="styleGuideGrid"></div>
   </div>
-
+  <div class="image-manager">
+    <div class="section-label">Images <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:11px;color:var(--ink-3)">&mdash; optional, add images to be slotted and captioned by the editor</span></div>
+    <div class="image-list" id="imageList"></div>
+    <button class="add-img-btn" onclick="addImage()">&#43; Add Image</button>
+  </div>
+  <div class="section-label">Your Draft Article</div>
+  <textarea id="articleInput" placeholder="Paste your draft article here...&#10;&#10;The editor will rewrite it to your selected publication's standards, slot your images editorially, improve captions, and produce both a plain-text and Drupal-ready HTML version."></textarea>
+  <div class="action-row">
+    <button class="run-btn" id="runBtn" onclick="runEditor()">&#9998; Edit Article</button>
+    <button class="ghost-btn" onclick="clearAll()">Clear</button>
+    <span class="status-line" id="statusLine"></span>
+  </div>
   <div id="outputSection" style="display:none">
     <hr class="rule-strong">
     <div class="output-label" id="outputLabel">Edited Article</div>
-    <div class="output-grid">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('plain')">Plain Text</button>
+      <button class="tab-btn" onclick="switchTab('html')">HTML &mdash; Drupal</button>
+      <button class="tab-btn" onclick="switchTab('memo')">Editor&#39;s Memo</button>
+    </div>
+    <div class="tab-panel active" id="tab-plain">
       <div class="output-panel">
         <div class="output-panel-header">
-          <span class="output-panel-title"><i class="ti ti-file-text" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Edited Article</span>
-          <button class="copy-btn" onclick="copyText('editedArticle')"><i class="ti ti-copy" style="font-size:13px" aria-hidden="true"></i> Copy</button>
+          <span class="output-panel-title">Plain Text (Copyable)</span>
+          <div class="panel-btns"><button class="copy-btn" onclick="copyOutput('plainBody')">&#128203; Copy</button></div>
         </div>
-        <div class="output-panel-body" id="editedArticle">
-          <div class="placeholder-text">Your edited article will appear here.</div>
-        </div>
+        <div class="output-body" id="plainBody"><div class="placeholder-text">Plain text article will appear here.</div></div>
       </div>
+    </div>
+    <div class="tab-panel" id="tab-html">
       <div class="output-panel">
         <div class="output-panel-header">
-          <span class="output-panel-title"><i class="ti ti-notes" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Editor's Memo</span>
-          <button class="copy-btn" onclick="copyText('editorMemo')"><i class="ti ti-copy" style="font-size:13px" aria-hidden="true"></i> Copy</button>
+          <span class="output-panel-title">HTML &mdash; Drupal Ready</span>
+          <div class="panel-btns">
+            <button class="preview-btn" id="previewToggleBtn" onclick="togglePreview()">&#128065; Preview</button>
+            <button class="copy-btn" onclick="copyOutput('htmlBody')">&#128203; Copy HTML</button>
+          </div>
         </div>
-        <div class="output-panel-body memo-panel-body" id="editorMemo">
-          <div class="placeholder-text">Editorial notes will appear here.</div>
+        <div class="output-body mono" id="htmlBody"><div class="placeholder-text">Drupal-ready HTML will appear here. Copy and paste into your CMS body field.</div></div>
+        <iframe class="preview-frame" id="previewFrame" style="display:none" sandbox="allow-same-origin"></iframe>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-memo">
+      <div class="output-panel">
+        <div class="output-panel-header">
+          <span class="output-panel-title">Editor&#39;s Memo</span>
+          <div class="panel-btns"><button class="copy-btn" onclick="copyOutput('memoBody')">&#128203; Copy</button></div>
         </div>
+        <div class="output-body mono" id="memoBody"><div class="placeholder-text">Editorial notes will appear here.</div></div>
       </div>
     </div>
   </div>
-
 </main>
-
-<footer>Editorial Style Agent &mdash; Built with Claude Sonnet &mdash; For personal and institutional use</footer>
-
+<footer>Editorial Style Agent &mdash; Built with Claude Sonnet &mdash; For institutional use</footer>
 <script>
 const STYLES = [
   {
-    id:'wapo', tag:'News', tagClass:'tag-news', pub:'Washington Post',
-    desc:'Narrative, authoritative, public-interest journalism',
-    prompt:`You are the Editor-in-Chief of The Washington Post. Your editorial standards are exacting: authoritative yet accessible prose, the inverted pyramid for hard news, narrative-first for features. Strong ledes that earn the reader's trust in the first sentence. AP Style throughout. Headlines are declarative and active. Attribution is precise. Every paragraph earns its place. Cut passive voice, eliminate jargon, enforce show-don't-tell for colour, and demand clear transitions. Paragraphs are 2–3 sentences. You never bury the lede.`
+    id:"wapo", tag:"News", tagClass:"tag-news", pub:"Washington Post",
+    desc:"Narrative, authoritative, public-interest journalism",
+    guide:{
+      "Voice & Tone":"Authoritative yet accessible. Investigative energy even in straight news. Active voice throughout. The reader should feel informed, not lectured.",
+      "Headlines":"Declarative active-verb sentences. Sentence case. Under 10 words. Never a question. Example: <strong>Ghana university spinouts attract record investor interest</strong>",
+      "Quote Style":"Double quotation marks. Attribution at end: <strong>said [Name], [title]</strong>. Avoid &quot;stated&quot;, &quot;claimed&quot;, &quot;noted&quot;. Block quotes for 3+ sentence extracts. Never start a paragraph with a quote.",
+      "Attribution":"Full name and title on first mention. Surname only after. Always verify titles exactly.",
+      "Links & Sources":"Hyperlink key facts to primary sources. Link text must be a descriptive noun phrase &mdash; never &quot;click here&quot;. Government docs, institutional reports, journal DOIs.",
+      "Images & Captions":"Present tense, max 25 words, no period unless a full sentence. Credit in parentheses at end. Example: <strong>KNUST researchers demonstrate the solar cooking device at a community trial in Ejisu. (KNUST/OGR)</strong>"
+    },
+    prompt:"You are the Editor-in-Chief of The Washington Post. Your editorial standards are exacting: authoritative yet accessible prose, the inverted pyramid for hard news, narrative-first for features. Strong ledes earn the reader's trust in the first sentence. AP Style throughout. Headlines are declarative and active, sentence case, under 10 words. Attribution uses \"said\" and never \"stated\" or \"claimed\". Every paragraph earns its place. Cut passive voice, enforce show-don't-tell, demand clear transitions. Paragraphs are 2-3 sentences. Never bury the lede. Quotes use double marks, attribution at end. Hyperlinks use descriptive anchor text, never \"click here\". Image captions: present tense, max 25 words, credit in parentheses."
   },
   {
-    id:'economist', tag:'Policy', tagClass:'tag-policy', pub:'The Economist',
-    desc:'Analytical, opinionated, pithy — every sentence counts',
-    prompt:`You are the Editor-in-Chief of The Economist. Precise, witty, unapologetically opinionated on the basis of evidence. Active voice almost exclusively. Short, punchy sentences. Elegant paradoxes and well-placed irony. Never use the first person. Prefer "says" over "stated". Headlines are clever, often using wordplay. Subheadings are single-line summaries. Cut redundancy ruthlessly. Challenge every claim for specificity. Complex ideas get one clarifying analogy. The "turnaround" — the unexpected angle — is your signature.`
+    id:"economist", tag:"Policy", tagClass:"tag-policy", pub:"The Economist",
+    desc:"Analytical, opinionated, pithy \u2014 every sentence counts",
+    guide:{
+      "Voice & Tone":"Precise, witty, unapologetically opinionated on the basis of evidence. The publication takes a view. Confident but never smug. Dry irony is welcome.",
+      "Headlines":"Clever, often a double meaning or wordplay. The deck (standfirst) explains the headline. Example headline: <strong>Fields of dreams</strong>. Deck: <strong>Ghana\u2019s agri-voltaic revolution may yet power a continent</strong>",
+      "Quote Style":"Integrated into sentences, not displayed. <strong>Never</strong> start a paragraph with a quote. Attribution at end, job title first mention only.",
+      "Attribution":"\"says [Surname]\" \u2014 always present tense. First mention: <strong>[Name] of [Institution]</strong>. Drop first name entirely on all subsequent mentions.",
+      "Links & Sources":"Minimal. Used only for data sources, official reports, or prior Economist coverage. Never hyperlink quotes.",
+      "Images & Captions":"Short, occasionally wry. Credit in small line below. Captions can carry a punch of their own. Max 15 words. No period."
+    },
+    prompt:"You are the Editor-in-Chief of The Economist. Precise, witty, unapologetically opinionated on the basis of evidence. Active voice exclusively. Short punchy sentences. Elegant paradoxes and well-placed irony. Never use the first person. Prefer \"says\" over \"stated\". Headlines are clever, often using wordplay; deck subheads explain the headline. Subheadings are single-line summaries. Cut redundancy ruthlessly. Challenge every claim for specificity. Complex ideas get one clarifying analogy. The turnaround \u2014 the unexpected angle \u2014 is your signature move. Captions: short, occasionally wry, max 15 words."
   },
   {
-    id:'nature', tag:'Science', tagClass:'tag-science', pub:'Nature News',
-    desc:'Evidence-first science storytelling for expert audiences',
-    prompt:`You are the Chief Editor of Nature News & Views. Rigorous science communication for a highly educated audience. Lead with the finding, then its significance, then the method. Claims require attribution to named researchers. Challenge vague language like "could" or "may" — replace with precise epistemic qualifiers. Consistent SI units and statistical framing. Jargon is acceptable but defined on first use. Headlines state the finding directly. Guard against hype and overstatement above all else.`
+    id:"nature", tag:"Science", tagClass:"tag-science", pub:"Nature News",
+    desc:"Evidence-first science storytelling for expert audiences",
+    guide:{
+      "Voice & Tone":"Rigorous, precise, restrained. Evidence comes before interpretation. Avoid hype. Epistemic humility is not weakness \u2014 it is accuracy. The reader is a peer.",
+      "Headlines":"State the finding directly. <strong>New solar material doubles efficiency at a fraction of the cost</strong>. Avoid vague constructions like \"Scientists discover\" or \"Research shows\".",
+      "Quote Style":"Full name, institution, and role on first mention: <strong>Dr Akosua Mensah, a materials chemist at KNUST, says...</strong>. Inline only \u2014 no block quotes.",
+      "Attribution":"Always: <strong>[Full name], a [role] at [institution]</strong>. On repeat: <strong>Dr Mensah says</strong>. Cite the paper or report alongside the person where possible.",
+      "Links & Sources":"DOI links for journal papers. Institutional URLs for datasets. Hyperlink the journal name, not the title. Government reports: full title with URL.",
+      "Images & Captions":"Technical and descriptive. Include units for charts. Credit to lab or photographer. Example: <strong>Cross-section of bactericidal surface under scanning electron microscopy at 500x magnification. (KNUST Materials Lab)</strong>"
+    },
+    prompt:"You are the Chief Editor of Nature News & Views. Rigorous science communication for a highly educated audience. Lead with the finding, then its significance, then the method. Claims require attribution to named researchers with full institutional affiliation on first mention. Challenge vague language \u2014 replace \"could\" or \"may\" with precise epistemic qualifiers where evidence supports it. Enforce SI units and statistical framing. Jargon is acceptable but defined on first use. Headlines state the finding directly. Guard against hype and overstatement above all else. DOI and institutional links preferred. Captions: technical and descriptive, include measurement units where relevant."
   },
   {
-    id:'mit', tag:'Tech', tagClass:'tag-tech', pub:'MIT Tech Review',
-    desc:'Deep tech, innovation-focused, accessible to educated non-specialists',
-    prompt:`You are the Editor-in-Chief of MIT Technology Review. Technology with depth and nuance for intelligent non-specialists. Contextualise every technology claim within broader scientific, economic, or social systems. Challenge breathless tech hype with historical context. Ledes start with a concrete human or industrial scenario — not an abstract concept. Short paragraphs, smart subheadings. Define technical terms on first introduction. Always ask "so what?" — and answer it.`
+    id:"mit", tag:"Tech", tagClass:"tag-tech", pub:"MIT Tech Review",
+    desc:"Deep tech, innovation-focused, accessible to educated non-specialists",
+    guide:{
+      "Voice & Tone":"Depth and nuance for intelligent non-specialists. Challenge tech hype with historical context. Ask \"so what?\" and answer it. Enthusiasm is earned, not assumed.",
+      "Headlines":"Forward-looking and specific. <strong>How a Ghanaian startup is using AI to find water before the drought hits</strong>. Avoid jargon in headlines.",
+      "Quote Style":"Mix of inline and pull quotes. Pull quotes are standalone highlighted passages \u2014 used for the single most compelling line. Attribution includes company and role.",
+      "Attribution":"<strong>[Name], [role] at [company/institution]</strong>. For academics: <strong>[Name], a [field] researcher at [university]</strong>.",
+      "Links & Sources":"Extensive. Link original research, company websites, prior MIT TR coverage, app stores, data sources. The hyperlink is a key part of the reading experience.",
+      "Images & Captions":"Descriptive, technical. Credit mandatory. Alt text matters for accessibility. Captions can go to 30 words for complex technical images. Present tense."
+    },
+    prompt:"You are the Editor-in-Chief of MIT Technology Review. Technology with depth and nuance for intelligent non-specialists. Contextualise every technology claim within broader scientific, economic, or social systems. Challenge breathless tech hype with historical context. Ledes start with a concrete human or industrial scenario \u2014 never an abstract concept. Short paragraphs, smart subheadings every 3-4 paragraphs. Define technical terms on first introduction. Always ask \"so what?\" and answer it. Extensive hyperlinks to research, products, and sources. Captions: descriptive, present tense, up to 30 words for complex technical images."
   },
   {
-    id:'ft', tag:'Finance', tagClass:'tag-finance', pub:'Financial Times',
-    desc:'Refined business prose — precise, global, investment-grade',
-    prompt:`You are the Editor-in-Chief of the Financial Times. Authoritative, measured, globally-minded business journalism. Restrained, declarative sentences with no hyperbole. Numbers must always be contextualised — year-on-year, sector benchmark, or regional comparison. Consistent currency symbols and financial terminology. Attribution names job titles and organisations precisely. Headlines are factual statements. Oxford comma throughout. Eliminate all clichés ("game-changer", "paradigm shift", "unprecedented") and replace with specific evidence. Corporate speak is your enemy.`
+    id:"ft", tag:"Finance", tagClass:"tag-finance", pub:"Financial Times",
+    desc:"Refined business prose \u2014 precise, global, investment-grade",
+    guide:{
+      "Voice & Tone":"Authoritative, measured, globally-minded. No hyperbole. Restrained declarative sentences. The reader is a professional who will check your numbers.",
+      "Headlines":"A factual statement of the news. Sentence case. Example: <strong>KNUST spin-out secures $2m seed round from AfDB innovation fund</strong>. No puns.",
+      "Quote Style":"Strictly attributed. Block quotes for formal official statements only. Attribution: <strong>[Full name], [exact title], [organisation]</strong>. Oxford comma throughout.",
+      "Attribution":"Full formal title always on first mention. <strong>Prof. Jerry John Kponyo, Director of the Office of Grants and Research at KNUST</strong>. Surname only after.",
+      "Links & Sources":"Sparingly \u2014 to official filings, institutional press releases. Do not hyperlink raw statistics; cite the source in text.",
+      "Images & Captions":"Factual, no adjectives. Photo credit: <strong>[Photographer surname]/[Agency]</strong>. Captions: present tense, max 20 words."
+    },
+    prompt:"You are the Editor-in-Chief of the Financial Times. Authoritative, measured, globally-minded business journalism. Restrained declarative sentences, no hyperbole. Numbers must always be contextualised \u2014 year-on-year, sector benchmark, or regional comparison. Enforce consistent currency symbols and financial terminology. Attribution names exact job titles and organisations. Headlines are factual statements, sentence case. Oxford comma throughout. Eliminate all cliches (game-changer, paradigm shift, unprecedented) and replace with specific evidence. Corporate speak is your enemy. Block quotes for formal official statements only. Photo credits: Photographer/Agency format."
   },
   {
-    id:'africabiz', tag:'Africa', tagClass:'tag-africa', pub:'African Business',
-    desc:'Africa-focused, development economics, business growth narrative',
-    prompt:`You are the Editor-in-Chief of African Business Magazine. Tell African business stories with authenticity, economic rigour, and evidence-grounded optimism. Contextualise within intra-African trade (AfCFTA), demographic trends, and sectoral investment flows. Avoid the deficit narrative and "Africa rising" clichés equally. Name countries, cities, and institutions specifically. Prefer African entrepreneurial and policy protagonists over foreign investors as primary actors. Economic data must be sourced (World Bank, AfDB, national statistics). Your reader is an African executive, policymaker, or investor.`
+    id:"africabiz", tag:"Africa", tagClass:"tag-africa", pub:"African Business",
+    desc:"Africa-focused, development economics, business growth narrative",
+    guide:{
+      "Voice & Tone":"Authentic, economically rigorous, and optimistic on the basis of evidence. Avoid deficit narratives and \"Africa rising\" cliches equally. The protagonist is African.",
+      "Headlines":"Specific and grounded. Name the country, sector, or technology. <strong>Ghana okra pectin startup targets $50m FMCG market across West Africa</strong>. Avoid \"Africa's X\".",
+      "Quote Style":"Direct quotes from named African leaders, entrepreneurs, and ministers. Inline and block. Attribution always includes nationality or country context.",
+      "Attribution":"<strong>[Name], [title], [organisation]</strong> \u2014 always with country or institution context.",
+      "Links & Sources":"AfDB data, World Bank Africa reports, UNCTAD, national statistical agencies, AfCFTA Secretariat. Hyperlink statistics to source.",
+      "Images & Captions":"Contextualise with geography and date. <strong>Workers install solar panels at a community farm in Ashanti Region, Ghana, March 2026. (OGR/KNUST)</strong>. Max 30 words."
+    },
+    prompt:"You are the Editor-in-Chief of African Business Magazine. Tell African business stories with authenticity, economic rigour, and evidence-grounded optimism. Contextualise within intra-African trade (AfCFTA), demographic trends, and sectoral investment flows. Avoid the deficit narrative and \"Africa rising\" cliches equally \u2014 both are lazy. Name countries, cities, and institutions specifically. Prefer African entrepreneurial and policy protagonists over foreign investors as primary actors. Economic data must be sourced (World Bank, AfDB, national statistics). Hyperlink all statistics to their source. Captions include geography and date, max 30 words."
   },
   {
-    id:'techcrunch', tag:'Tech', tagClass:'tag-tech', pub:'TechCrunch',
-    desc:'Startup & VC lens — punchy, fast, founder-first',
-    prompt:`You are the Editor-in-Chief of TechCrunch. Fast, punchy, startup-centric. Ledes are one or two sentences max and land the news immediately. Funding stories must say: how much was raised, at what valuation, who led the round. Explain "why now" and "who are the competitors" within the first 200 words. Cut every sentence that adds no new information. Subheadings are punchy and conversational. Present tense wherever possible. Prefer concrete product details over vision statements. Sceptical of claims but reports them fairly.`
+    id:"techcrunch", tag:"Tech", tagClass:"tag-tech", pub:"TechCrunch",
+    desc:"Startup & VC lens \u2014 punchy, fast, founder-first",
+    guide:{
+      "Voice & Tone":"Fast, direct, founder-centric. No fluff. Every paragraph must earn its next. Sceptical of claims but reports them fairly. The reader skims \u2014 make every line count.",
+      "Headlines":"Present tense active verb. Under 70 characters. Numbers where possible. <strong>KNUST spinout raises $500K to bring AI groundwater mapping to 10 African cities</strong>.",
+      "Quote Style":"Founder/CEO quotes prominently featured and conversational. Inline only. Attribution: <strong>[Name], [founder/CEO] of [company]</strong>. Keep quotes punchy \u2014 max 2 sentences.",
+      "Attribution":"<strong>[Name], [role] of [company]</strong>. Conversational on second mention is acceptable.",
+      "Links & Sources":"Extensive inline linking \u2014 Crunchbase, LinkedIn, product pages, app store links. Links are part of the story.",
+      "Images & Captions":"Product screenshots, founder headshots, logo on white background. Captions: very short, 1 sentence. <strong>The AquaTrack webapp dashboard. (Screenshot)</strong>"
+    },
+    prompt:"You are the Editor-in-Chief of TechCrunch. Fast, punchy, startup-centric. Ledes are one or two sentences max and land the news immediately. Funding stories must say: how much was raised, at what valuation, who led the round. Explain \"why now\" and \"who are the competitors\" within the first 200 words. Cut every sentence that adds no new information. Subheadings are punchy and conversational. Present tense wherever possible. Prefer concrete product details over vision statements. Extensive inline links to Crunchbase, LinkedIn, product pages. Captions: very short, 1 sentence, present tense."
   },
   {
-    id:'devfinance', tag:'Finance', tagClass:'tag-finance', pub:'Development Finance',
-    desc:'Impact investing, DFI & blended finance report style',
-    prompt:`You are the Chief Editor of a leading development finance publication (think: IFC Insights, OECD Development Co-operation Report, or AVCA Quarterly). Every financing claim must cite instrument type (grant, equity, debt, guarantee), ticket size, and geography. Use blended finance, catalytic capital, and DFI terminology precisely — define on first use. Every piece must answer: what is the development outcome, what was the financing structure, and what is replicable? Avoid advocacy language — replace with outcome evidence. The reader is an institutional investor, DFI officer, or development economist.`
+    id:"devfinance", tag:"Finance", tagClass:"tag-finance", pub:"Development Finance",
+    desc:"Impact investing, DFI & blended finance report style",
+    guide:{
+      "Voice & Tone":"Evidence-based, impact-oriented, technically rigorous. Outcome language, not advocacy language. The reader is an institutional investor or DFI officer who will stress-test your numbers.",
+      "Headlines":"Outcome-focused. Include financing instrument or scale. <strong>Blended finance facility of $3m catalyses university-to-market technology pipeline in Ghana</strong>.",
+      "Quote Style":"Official statements from DFI officers, fund managers, ministers, and researchers. Block quotes for formal statements. Attribution: full title, institution, country.",
+      "Attribution":"<strong>[Full name], [exact title], [institution], [country]</strong> on first mention. Formal throughout. No nicknames or first-name-only references.",
+      "Links & Sources":"IFC, World Bank, AfDB, OECD DAC, AVCA, GIIN reports. Always cite dataset name, year, and page number if available. DOI for academic citations.",
+      "Images & Captions":"Infrastructure, maps, data charts, facility photos. Captions describe development context and include funding instrument where relevant."
+    },
+    prompt:"You are the Chief Editor of a leading development finance publication (think: IFC Insights, OECD Development Co-operation Report, AVCA Quarterly). Every financing claim must cite instrument type (grant, equity, debt, guarantee), ticket size, and geography. Use blended finance, catalytic capital, and DFI terminology precisely \u2014 define on first use. Every piece must answer: what is the development outcome, what was the financing structure, and what is replicable? Avoid advocacy language \u2014 replace with outcome evidence. The reader is an institutional investor, DFI officer, or development economist. Full formal attribution throughout. Captions: describe development context, include funding instrument where relevant."
   }
 ];
 
-let selectedStyle = null;
+let selectedStyle=null, images=[], imgCounter=0, previewVisible=false;
 
-function renderStyles() {
-  const grid = document.getElementById('styleGrid');
-  grid.innerHTML = STYLES.map(s => `
-    <div class="style-card" id="card-${s.id}" onclick="selectStyle('${s.id}')" role="button" tabindex="0" aria-label="Select ${s.pub} style">
+function renderStyles(){
+  document.getElementById("styleGrid").innerHTML=STYLES.map(s=>
+    `<div class="style-card" id="card-${s.id}" onclick="selectStyle('${s.id}')">
       <span class="style-card-tag ${s.tagClass}">${s.tag}</span>
       <div class="style-card-pub">${s.pub}</div>
       <div class="style-card-desc">${s.desc}</div>
-    </div>`).join('');
+    </div>`).join("");
 }
 
-function selectStyle(id) {
-  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('card-' + id).classList.add('selected');
-  selectedStyle = STYLES.find(s => s.id === id);
+function selectStyle(id){
+  document.querySelectorAll(".style-card").forEach(c=>c.classList.remove("selected"));
+  document.getElementById("card-"+id).classList.add("selected");
+  selectedStyle=STYLES.find(s=>s.id===id);
+  renderGuide(selectedStyle);
 }
 
-function saveKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) return;
-  localStorage.setItem('esa_api_key', key);
-  document.getElementById('apiStatus').textContent = 'Key saved.';
-  setTimeout(() => document.getElementById('apiStatus').textContent = '', 3000);
+function renderGuide(style){
+  document.getElementById("styleGuideTitle").textContent=style.pub+" \u2014 Editorial Style Guide";
+  document.getElementById("styleGuideGrid").innerHTML=Object.entries(style.guide).map(([k,v])=>
+    `<div class="guide-block"><div class="guide-block-title">${k}</div><div class="guide-block-body">${v}</div></div>`).join("");
+  document.getElementById("styleGuidePanel").classList.add("open");
 }
 
-function loadKey() {
-  const saved = localStorage.getItem('esa_api_key');
-  if (saved) {
-    document.getElementById('apiKeyInput').value = saved;
-    document.getElementById('apiStatus').textContent = 'Key loaded.';
-    setTimeout(() => document.getElementById('apiStatus').textContent = '', 2000);
+function addImage(){
+  imgCounter++;
+  const id="img-"+imgCounter;
+  images.push({id,label:"IMAGE-"+imgCounter,url:"",caption:"",file:null});
+  renderImages();
+}
+
+function removeImage(id){
+  images=images.filter(i=>i.id!==id);
+  renderImages();
+}
+
+function renderImages(){
+  const list=document.getElementById("imageList");
+  if(!images.length){list.innerHTML="";return;}
+  list.innerHTML=images.map(img=>`
+    <div class="image-row" id="row-${img.id}">
+      <span class="image-label-badge">${img.label}</span>
+      <div id="thumb-${img.id}">${img.url?`<img class="image-thumb" src="${img.url}" alt="${img.label}" onerror="this.parentElement.innerHTML='<div class=image-thumb-placeholder>Bad URL</div>'">` :`<div class="image-thumb-placeholder">No<br>preview</div>`}</div>
+      <div class="image-fields">
+        <div class="img-url-row">
+          <input class="field-input mono" type="text" placeholder="Image URL (https://...)" value="${img.url}" oninput="updateImgUrl('${img.id}',this.value)" style="flex:1">
+          <label style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-2);white-space:nowrap;padding:6px 10px;border:0.5px solid var(--rule);border-radius:5px;background:var(--paper-2)">&#128190; Upload<input type="file" accept="image/*" style="display:none" onchange="handleUpload('${img.id}',this)"></label>
+        </div>
+        <textarea class="field-input caption-input" placeholder="Draft caption for ${img.label}..." rows="2" oninput="updateImgCaption('${img.id}',this.value)">${img.caption}</textarea>
+      </div>
+      <button class="remove-btn" onclick="removeImage('${img.id}')">&#10005; Remove</button>
+    </div>`).join("");
+}
+
+function updateImgUrl(id,val){
+  const img=images.find(i=>i.id===id);
+  if(img){
+    img.url=val;
+    const t=document.getElementById("thumb-"+id);
+    if(t) t.innerHTML=val?`<img class="image-thumb" src="${val}" alt="${img.label}" onerror="this.parentElement.innerHTML='<div class=image-thumb-placeholder>Bad URL</div>'">`:`<div class="image-thumb-placeholder">No<br>preview</div>`;
+  }
+}
+function updateImgCaption(id,val){const img=images.find(i=>i.id===id);if(img)img.caption=val;}
+function handleUpload(id,input){
+  const file=input.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{const img=images.find(i=>i.id===id);if(img){img.url=e.target.result;img.file=file.name;updateImgUrl(id,e.target.result);}};
+  r.readAsDataURL(file);
+}
+
+function switchTab(name){
+  document.querySelectorAll(".tab-btn").forEach((b,i)=>b.classList.toggle("active",["plain","html","memo"][i]===name));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+function togglePreview(){
+  const frame=document.getElementById("previewFrame");
+  const btn=document.getElementById("previewToggleBtn");
+  const body=document.getElementById("htmlBody");
+  previewVisible=!previewVisible;
+  frame.style.display=previewVisible?"block":"none";
+  body.style.display=previewVisible?"none":"block";
+  btn.classList.toggle("active",previewVisible);
+  if(previewVisible){
+    frame.srcdoc=`<html><body style="font-family:Georgia,serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a18">${body.textContent}</body></html>`;
   }
 }
 
-function getKey() {
-  return document.getElementById('apiKeyInput').value.trim() || localStorage.getItem('esa_api_key') || '';
+function saveKey(){
+  const k=document.getElementById("apiKeyInput").value.trim();
+  if(!k)return;
+  localStorage.setItem("esa_api_key",k);
+  document.getElementById("apiStatus").textContent="Key saved.";
+  setTimeout(()=>document.getElementById("apiStatus").textContent="",3000);
+}
+function loadKey(){
+  const k=localStorage.getItem("esa_api_key");
+  if(k){document.getElementById("apiKeyInput").value=k;document.getElementById("apiStatus").textContent="Key loaded.";setTimeout(()=>document.getElementById("apiStatus").textContent="",2000);}
+}
+function getKey(){return document.getElementById("apiKeyInput").value.trim()||localStorage.getItem("esa_api_key")||"";}
+
+function setStatus(msg){document.getElementById("statusLine").textContent=msg;}
+async function copyOutput(id){
+  try{await navigator.clipboard.writeText(document.getElementById(id).textContent);setStatus("Copied to clipboard.");setTimeout(()=>setStatus(""),2500);}
+  catch{setStatus("Select and copy manually.");}
+}
+function clearAll(){
+  document.getElementById("articleInput").value="";
+  document.getElementById("outputSection").style.display="none";
+  images=[];imgCounter=0;renderImages();
+  document.getElementById("styleGuidePanel").classList.remove("open");
+  document.querySelectorAll(".style-card").forEach(c=>c.classList.remove("selected"));
+  selectedStyle=null;setStatus("");
 }
 
-function clearAll() {
-  document.getElementById('articleInput').value = '';
-  document.getElementById('outputSection').style.display = 'none';
-  setStatus('');
-}
-
-function setStatus(msg) { document.getElementById('statusLine').textContent = msg; }
-
-async function runEditor() {
-  const article = document.getElementById('articleInput').value.trim();
-  const apiKey = getKey();
-  if (!apiKey) { setStatus('Please enter and save your Anthropic API key first.'); return; }
-  if (!article) { setStatus('Please paste a draft article first.'); return; }
-  if (!selectedStyle) { setStatus('Please select a publication style first.'); return; }
-
-  const btn = document.getElementById('runBtn');
-  btn.disabled = true;
-  setStatus('Sending to the editor...');
-  document.getElementById('outputSection').style.display = 'block';
-  document.getElementById('editedArticle').innerHTML = '<span class="loading-pulse">Editor is working through your draft...</span>';
-  document.getElementById('editorMemo').innerHTML = '<span class="loading-pulse">Preparing editorial notes...</span>';
-
-  const systemPrompt = selectedStyle.prompt + `
-
-TASK: You are reviewing a submitted article draft. Edit it and produce a memo.
-
-FORMAT YOUR RESPONSE EXACTLY AS FOLLOWS — use these exact delimiters:
-===EDITED ARTICLE===
-[Your fully edited article here]
-
-===EDITOR'S MEMO===
-MEMO TO: Author
-FROM: Editor-in-Chief, ${selectedStyle.pub}
-RE: [article headline]
-DATE: ${new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'})}
-
-[Numbered editorial notes explaining every significant change and why. Reference specific sentences or paragraphs. Be direct. End with a verdict: ACCEPT / REVISE and brief reason.]`;
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-calls': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2500,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `Please edit this article:\n\n${article}` }]
-      })
+async function runEditor(){
+  const article=document.getElementById("articleInput").value.trim();
+  const apiKey=getKey();
+  if(!apiKey){setStatus("Please enter and save your Anthropic API key.");return;}
+  if(!article){setStatus("Please paste a draft article first.");return;}
+  if(!selectedStyle){setStatus("Please select a publication style first.");return;}
+  const btn=document.getElementById("runBtn");
+  btn.disabled=true;
+  setStatus("Sending to the editor...");
+  document.getElementById("outputSection").style.display="block";
+  ["plainBody","htmlBody","memoBody"].forEach(id=>{document.getElementById(id).innerHTML='<span class="loading-pulse">Editor is working...</span>';});
+  const imgContext=images.length?"\n\nIMAGES TO SLOT INTO THE ARTICLE:\n"+images.map(i=>`- [${i.label}] Draft caption: "${i.caption||"(none)"}" URL: ${i.url||"(use label as placeholder)"}`).join("\n"):"";
+  const today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  const imgInstruction=images.length?` Slot images [${images.map(i=>i.label).join(",")}] at the most editorially appropriate points and improve their captions to match this publication's caption style.`:"";
+  const systemPrompt=selectedStyle.prompt+`\n\nTASK: Edit the submitted article to this publication's standards.${imgInstruction} Produce THREE outputs using EXACT delimiters shown:\n\n===PLAIN TEXT===\nFull polished article in plain text.${images.length?" Use [IMAGE-1: improved caption] markers where images should appear.":""} Convert any bare URLs to [LINK: anchor text | URL] format.\n\n===HTML===\nClean Drupal-ready HTML body content only (no html/head/body wrapper tags, no inline styles). Use: <h1> headline, <h2>/<h3> subheadings, <p> paragraphs, <blockquote> extended quotes, <strong>/<em> emphasis, <a href="URL">text</a> links, <ul>/<ol>/<li> lists${images.length?", <figure><img src=\"IMAGE_URL\" alt=\"description\"><figcaption>caption</figcaption></figure> for images":""}.  \n\n===EDITOR MEMO===\nMEMO TO: Author\nFROM: Editor-in-Chief, ${selectedStyle.pub}\nDATE: ${today}\nRE: [article headline]\n\n[Numbered editorial notes on what you changed and why. Reference specific sentences. End with verdict: ACCEPT or REVISE and brief reason.]`;
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-calls":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,system:systemPrompt,messages:[{role:"user",content:`Please edit this article:${imgContext}\n\nARTICLE:\n${article}`}]})
     });
-
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || `HTTP ${resp.status}`);
-    }
-
-    const data = await resp.json();
-    const text = data.content.map(b => b.type === 'text' ? b.text : '').join('');
-    const parts = text.split("===EDITOR'S MEMO===");
-    const editedRaw = parts[0].replace('===EDITED ARTICLE===', '').trim();
-    const memoRaw = parts[1] ? parts[1].trim() : 'No memo returned.';
-
-    document.getElementById('editedArticle').textContent = editedRaw;
-    document.getElementById('editorMemo').textContent = memoRaw;
-    document.getElementById('outputLabel').textContent = `Edited to ${selectedStyle.pub} Standards`;
-    setStatus(`Done. Article edited to ${selectedStyle.pub} standards.`);
-
-  } catch (e) {
-    document.getElementById('editedArticle').textContent = 'Error: ' + e.message;
-    document.getElementById('editorMemo').textContent = 'Please check your API key and try again.';
-    setStatus('Something went wrong — see output panel.');
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||`HTTP ${resp.status}`);}
+    const data=await resp.json();
+    const text=data.content.map(b=>b.type==="text"?b.text:"").join("");
+    function splitOn(str,delim){const i=str.indexOf(delim);return i===-1?["",str]:[str.slice(0,i),str.slice(i+delim.length)];}
+    const [,afterPlain]=splitOn(text,"===PLAIN TEXT===");
+    const [plainRaw,afterHtml]=splitOn(afterPlain,"===HTML===");
+    const [htmlRaw,memoRaw]=splitOn(afterHtml,"===EDITOR MEMO===");
+    document.getElementById("plainBody").textContent=plainRaw.trim().replace(/\[LINK:\s*([^|]+)\|\s*([^\]]+)\]/g,"$1 ($2)");
+    document.getElementById("htmlBody").textContent=htmlRaw.trim();
+    document.getElementById("memoBody").textContent=memoRaw.trim()||"No memo returned.";
+    previewVisible=false;
+    document.getElementById("previewFrame").style.display="none";
+    document.getElementById("htmlBody").style.display="block";
+    document.getElementById("previewToggleBtn").classList.remove("active");
+    document.getElementById("outputLabel").textContent="Edited to "+selectedStyle.pub+" Standards";
+    setStatus("Done \u2014 plain text, HTML, and memo ready.");
+  }catch(e){
+    document.getElementById("plainBody").textContent="Error: "+e.message;
+    document.getElementById("htmlBody").textContent="Check your API key and try again.";
+    document.getElementById("memoBody").textContent="";
+    setStatus("Something went wrong.");
   }
-
-  btn.disabled = false;
-}
-
-async function copyText(id) {
-  const t = document.getElementById(id).textContent;
-  try {
-    await navigator.clipboard.writeText(t);
-    setStatus('Copied to clipboard.');
-    setTimeout(() => setStatus(''), 2500);
-  } catch {
-    setStatus('Could not copy — please select and copy manually.');
-  }
+  btn.disabled=false;
 }
 
 renderStyles();

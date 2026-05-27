@@ -113,6 +113,25 @@ textarea:focus{outline:none;border-color:var(--ink)}
 @keyframes pulse{0%,100%{opacity:0.35}50%{opacity:1}}
 .social-panels-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:1.5rem}
 .social-section-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-3);margin-bottom:0.75rem;font-weight:600;border-bottom:0.5px solid var(--rule);padding-bottom:0.4rem;margin-top:2rem}
+.blend-panel{border:0.5px solid var(--rule);border-radius:var(--radius);background:var(--paper-2);padding:1rem 1.25rem;margin-bottom:1.75rem;display:none}
+.blend-panel.open{display:block}
+.blend-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:0.75rem}
+.blend-style-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:1rem}
+.blend-card{font-family:'Playfair Display',serif;font-size:12px;font-weight:600;padding:6px 12px;border:0.5px solid var(--rule);border-radius:5px;cursor:pointer;background:var(--paper);color:var(--ink-2);transition:all 0.15s;white-space:nowrap}
+.blend-card:hover{border-color:var(--rule-strong);color:var(--ink)}
+.blend-card.selected{border:2px solid var(--ink);background:var(--paper);color:var(--ink)}
+.blend-card.disabled{opacity:0.3;cursor:not-allowed;pointer-events:none}
+.blend-slider-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.blend-label-a{font-size:12px;color:var(--ink);font-weight:600;min-width:130px;text-align:right}
+.blend-label-b{font-size:12px;color:var(--ink-2);min-width:130px}
+.blend-slider{flex:1;min-width:120px;accent-color:var(--ink)}
+.blend-readout{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);white-space:nowrap}
+.blend-none-btn{font-size:11px;padding:3px 10px;border:0.5px solid var(--rule-strong);border-radius:4px;background:transparent;color:var(--ink-3);cursor:pointer;font-family:'Source Serif 4',serif}
+.blend-none-btn:hover{color:var(--danger);border-color:var(--danger)}
+.comments-box{margin-bottom:1.25rem}
+.comments-textarea{width:100%;border:0.5px solid var(--rule);border-radius:var(--radius);padding:12px 14px;font-family:'Source Serif 4',serif;font-size:13.5px;line-height:1.7;background:var(--paper);color:var(--ink);resize:vertical;min-height:80px}
+.comments-textarea:focus{outline:none;border-color:var(--ink)}
+.comments-hint{font-size:11.5px;color:var(--ink-3);font-style:italic;margin-top:5px}
 footer{border-top:0.5px solid var(--rule);padding:1rem 2rem;text-align:center;font-size:11px;color:var(--ink-3);letter-spacing:1px}
 @media(max-width:680px){header{flex-direction:column;align-items:flex-start}main{padding:1rem}.style-grid{grid-template-columns:1fr 1fr}}
 </style>
@@ -136,6 +155,20 @@ footer{border-top:0.5px solid var(--rule);padding:1rem 2rem;text-align:center;fo
   <div class="style-guide-panel" id="styleGuidePanel">
     <div class="style-guide-title" id="styleGuideTitle"></div>
     <div class="style-guide-grid" id="styleGuideGrid"></div>
+  </div>
+
+  <div class="blend-panel" id="blendPanel">
+    <div class="blend-title">Blend with a second style <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:11px;color:var(--ink-3)">&mdash; optional</span></div>
+    <div class="blend-style-row" id="blendStyleRow"></div>
+    <div id="blendSliderWrap" style="display:none">
+      <div class="blend-slider-row">
+        <span class="blend-label-a" id="blendLabelA"></span>
+        <input class="blend-slider" type="range" min="10" max="90" step="10" value="70" id="blendSlider" oninput="setBlend(this.value)">
+        <span class="blend-label-b" id="blendLabelB"></span>
+        <span class="blend-readout" id="blendReadout">70 / 30</span>
+        <button class="blend-none-btn" onclick="clearBlend()">&#10005; Remove blend</button>
+      </div>
+    </div>
   </div>
 
   <div class="format-selector">
@@ -168,6 +201,12 @@ footer{border-top:0.5px solid var(--rule);padding:1rem 2rem;text-align:center;fo
 
   <div class="section-label">4. Your Draft Article</div>
   <textarea id="articleInput" placeholder="Paste your draft article here. The agent will edit it to your selected publication style and generate all selected output formats."></textarea>
+  <div class="comments-box">
+    <div class="section-label">5. Editorial Instructions <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:11px;color:var(--ink-3)">&mdash; optional corrections or direction for the editor</span></div>
+    <textarea class="comments-textarea" id="commentsInput" placeholder="e.g. Centre the postgraduate horticulture students as the primary subjects. The event was a capacity-building workshop, not a general staff event. Avoid passive voice in the opening paragraph."></textarea>
+    <div class="comments-hint">These instructions override the style defaults. They are also applied on every Regenerate.</div>
+  </div>
+
   <div class="action-row">
     <button class="run-btn" id="runBtn" onclick="runAll()">&#9998; Edit &amp; Publish</button>
     <button class="ghost-btn" onclick="clearAll()">Clear</button>
@@ -340,6 +379,20 @@ const STYLES = [
       "Images & Captions":"Infrastructure, maps, data charts. Captions describe development context and funding instrument."
     },
     prompt:"You are the Chief Editor of a leading development finance publication. Every financing claim must cite instrument type such as grant, equity, debt, or guarantee along with ticket size and geography. Use blended finance, catalytic capital, and DFI terminology precisely and define on first use. Every piece must answer: what is the development outcome, what was the financing structure, and what is replicable? Avoid advocacy language and replace with outcome evidence."
+  },
+  {
+    id:"bbc",tag:"News",tagClass:"tag-news",pub:"BBC News",
+    desc:"Public-interest broadcast journalism — clear, human-centred, global audience",
+    voice:"clear, authoritative, impartial, human-centred, accessible to a global general audience",
+    guide:{
+      "Voice & Tone":"Clear, calm, authoritative. Impartial but not disengaged. The story is always about people first, institutions second. Accessible to a global general audience without being simplistic.",
+      "Headlines":"Active verb, specific, under 10 words. Subject-verb-object. Example: <strong>Ghana horticulture students complete first grant-writing intensive</strong>. No puns. No questions.",
+      "Quote Style":"Quotes introduce the human dimension. Attribution precedes the quote: <strong>Dr Tagoe says the skills gap is real but fixable.</strong> Never dangle attribution at the end of long quotes.",
+      "Attribution":"Full name and title on first mention. Surname only after. Institutions named precisely. Never assume the reader knows the acronym — spell it out first.",
+      "Links & Sources":"Hyperlink to institutional sources, government data, and official statements. Anchor text is descriptive. No bare URLs.",
+      "Images & Captions":"Past tense for specific events, present tense for general truths. Credit mandatory. Location and date where known. Example: <strong>Participants worked in teams to develop interdisciplinary research pitches during the KNUST grantsmanship workshop. (OGR/KNUST)</strong>"
+    },
+    prompt:"You are the Editor-in-Chief of BBC News digital. Your editorial standards demand clarity, impartiality, and a human-centred approach. The story is always about people first and institutions second. Centre the human subjects — students, researchers, communities — not the organisations that serve them. Use plain English accessible to a global general audience. Define every acronym on first use. Lead with the most newsworthy fact, not the most institutional one. Attribution precedes quotes, never follows them. Active voice throughout. Short sentences — maximum 25 words. Short paragraphs — maximum 3 sentences. Never begin a story with an organisation's name. The BBC never advocates; it informs. If the story has a human consequence, that consequence leads."
   }
 ];
 
@@ -389,13 +442,17 @@ const PLATFORM_RULES = {
   }
 };
 
-let selectedStyle=null, images=[], imgCounter=0, previewVisible=false;
+let selectedStyle=null, selectedStyle2=null, blendRatio=70;
+let images=[], imgCounter=0, previewVisible=false;
 const selectedFormats=new Set(["article"]);
 let lastCtx=null;
 
 function renderStyles(){
   document.getElementById("styleGrid").innerHTML=STYLES.map(s=>
     `<div class="style-card" id="card-${s.id}" onclick="selectStyle('${s.id}')"><span class="style-card-tag ${s.tagClass}">${s.tag}</span><div class="style-card-pub">${s.pub}</div><div class="style-card-desc">${s.desc}</div></div>`
+  ).join("");
+  document.getElementById("blendStyleRow").innerHTML=STYLES.map(s=>
+    `<button class="blend-card" id="blend-card-${s.id}" onclick="selectStyle2('${s.id}')">${s.pub}</button>`
   ).join("");
 }
 
@@ -404,6 +461,48 @@ function selectStyle(id){
   document.getElementById("card-"+id).classList.add("selected");
   selectedStyle=STYLES.find(s=>s.id===id);
   renderGuide(selectedStyle);
+  document.getElementById("blendPanel").classList.add("open");
+  updateBlendCards();
+  if(selectedStyle2&&selectedStyle2.id===id){clearBlend();}
+  updateBlendLabels();
+}
+
+function selectStyle2(id){
+  if(selectedStyle&&selectedStyle.id===id)return;
+  document.querySelectorAll(".blend-card").forEach(c=>c.classList.remove("selected"));
+  document.getElementById("blend-card-"+id).classList.add("selected");
+  selectedStyle2=STYLES.find(s=>s.id===id);
+  document.getElementById("blendSliderWrap").style.display="block";
+  updateBlendLabels();
+}
+
+function updateBlendCards(){
+  document.querySelectorAll(".blend-card").forEach(b=>b.classList.remove("disabled"));
+  if(selectedStyle){
+    const el=document.getElementById("blend-card-"+selectedStyle.id);
+    if(el){el.classList.add("disabled");el.classList.remove("selected");}
+  }
+}
+
+function setBlend(val){
+  blendRatio=parseInt(val);
+  updateBlendLabels();
+}
+
+function updateBlendLabels(){
+  if(!selectedStyle)return;
+  document.getElementById("blendLabelA").textContent=selectedStyle.pub;
+  document.getElementById("blendLabelB").textContent=selectedStyle2?selectedStyle2.pub:"(none)";
+  document.getElementById("blendReadout").textContent=blendRatio+"% / "+(100-blendRatio)+"%";
+}
+
+function clearBlend(){
+  selectedStyle2=null;
+  document.querySelectorAll(".blend-card").forEach(c=>c.classList.remove("selected"));
+  document.getElementById("blendSliderWrap").style.display="none";
+  document.getElementById("blendReadout").textContent="70 / 30";
+  document.getElementById("blendSlider").value=70;
+  blendRatio=70;
 }
 
 function renderGuide(style){
@@ -511,38 +610,61 @@ function loadKey(){
 function getKey(){return document.getElementById("apiKeyInput").value.trim()||localStorage.getItem("esa_api_key")||"";}
 function setStatus(msg){document.getElementById("statusLine").textContent=msg;}
 
-async function callClaude(systemPrompt,userMsg){
-  const resp=await fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","x-api-key":getKey(),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-calls":"true"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:3000,system:systemPrompt,messages:[{role:"user",content:userMsg}]})
-  });
-  if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||"HTTP "+resp.status);}
-  const data=await resp.json();
-  return data.content.map(b=>b.type==="text"?b.text:"").join("");
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function callClaude(systemPrompt,userMsg,retries=2){
+  for(let attempt=0;attempt<=retries;attempt++){
+    try{
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":getKey(),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-calls":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:3000,system:systemPrompt,messages:[{role:"user",content:userMsg}]})
+      });
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||"HTTP "+resp.status);}
+      const data=await resp.json();
+      return data.content.map(b=>b.type==="text"?b.text:"").join("");
+    }catch(e){
+      const retryable=e.message==="Failed to fetch"||e.message.includes("network")||e.message.includes("429");
+      if(retryable&&attempt<retries){await sleep(1500*(attempt+1));continue;}
+      throw e;
+    }
+  }
 }
 
-function buildArticlePrompt(style,imgs,isRegen){
-  const imgCtx=imgs.length?"\n\nIMAGES:\n"+imgs.map(i=>`[${i.label}] caption: "${i.caption||"none"}" url: ${i.url||"use label as placeholder"}`).join("\n"):"";
+function buildBlendHeader(style,style2,ratio){
+  if(!style2)return "";
+  return `\n\nBLENDED VOICE INSTRUCTION: You are combining two editorial styles. Apply ${style.pub} as the dominant voice (${ratio}% weight) and ${style2.pub} as the secondary influence (${100-ratio}% weight). Dominant style sets structure, tone, and headline approach. Secondary style contributes sentence rhythm, attribution conventions, and perspective framing. Do not alternate mechanically between styles; blend them into a single coherent voice.\n\nSECONDARY STYLE REFERENCE (${100-ratio}% influence): ${style2.prompt}`;
+}
+
+function buildCommentsBlock(comments){
+  if(!comments||!comments.trim())return "";
+  return `\n\nEDITOR\'S SPECIFIC INSTRUCTIONS (these override style defaults and must be applied precisely):\n${comments.trim()}`;
+}
+
+function buildArticlePrompt(style,style2,ratio,imgs,comments,isRegen){
   const imgInstr=imgs.length?` Slot images at the most editorially appropriate points and improve captions to match publication style.`:"";
   const regenNote=isRegen?"\n\nIMPORTANT: This is a regeneration request. Produce a meaningfully fresh alternative version \u2014 different lede, different structural approach, different angle where possible.":"";
   const today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
-  return style.prompt+regenNote+`\n\nTASK: Edit the submitted article to this publication's standards.${imgInstr} Produce THREE sections using EXACT delimiters:\n\n===PLAIN TEXT===\nFull polished article.${imgs.length?" Use [IMAGE-N: improved caption] markers.":""} Convert bare URLs to [LINK: anchor text | URL] format.\n\n===HTML===\nClean Drupal-ready HTML body only (no html/head/body wrapper, no inline styles). Use: <h1> headline, <h2>/<h3> subheadings, <p> paragraphs, <blockquote> extended quotes, <strong>/<em> emphasis, <a href="URL">text</a> links${imgs.length?", <figure><img src=\"URL\" alt=\"desc\"><figcaption>caption</figcaption></figure> images":""}.\n\n===EDITOR MEMO===\nMEMO TO: Author\nFROM: Editor-in-Chief, ${style.pub}\nDATE: ${today}\nRE: [article headline]\n\n[Numbered editorial notes. End with ACCEPT or REVISE verdict.]`;
+  const blendBlock=buildBlendHeader(style,style2,ratio);
+  const commentsBlock=buildCommentsBlock(comments);
+  return style.prompt+blendBlock+commentsBlock+regenNote+`\n\nTASK: Edit the submitted article to this publication's standards.${imgInstr} Produce THREE sections using EXACT delimiters:\n\n===PLAIN TEXT===\nFull polished article.${imgs.length?" Use [IMAGE-N: improved caption] markers.":""} Convert bare URLs to [LINK: anchor text | URL] format.\n\n===HTML===\nClean Drupal-ready HTML body only (no html/head/body wrapper, no inline styles). Use: <h1> headline, <h2>/<h3> subheadings, <p> paragraphs, <blockquote> extended quotes, <strong>/<em> emphasis, <a href="URL">text</a> links${imgs.length?", <figure><img src=\"URL\" alt=\"desc\"><figcaption>caption</figcaption></figure> images":""}.\n\n===EDITOR MEMO===\nMEMO TO: Author\nFROM: Editor-in-Chief, ${style.pub}${style2?" x "+style2.pub:""}\nDATE: ${today}\nRE: [article headline]\n\n[Numbered editorial notes. End with ACCEPT or REVISE verdict.]`;
 }
 
-function buildSocialPrompt(style,platform,isRegen){
+function buildSocialPrompt(style,style2,ratio,platform,comments,isRegen){
   const rules=PLATFORM_RULES[platform].rules;
   const regenNote=isRegen?"\n\nIMPORTANT: This is a regeneration. Produce a meaningfully fresh alternative \u2014 different hook, different angle, different structure where possible.":"";
-  return `You are the social media editor at ${style.pub}. Your publication's editorial voice is: ${style.voice}.\n\nAdapt the submitted article into a ${PLATFORM_RULES[platform].label} post that maintains the publication's distinctive voice while following the platform format rules precisely.\n\n${rules}${regenNote}`;
+  const blendNote=style2?`\n\nBLENDED VOICE: Combine ${style.pub} (${ratio}%) with ${style2.pub} (${100-ratio}%). Dominant voice is ${style.pub}; draw ${100-ratio}% of tone and framing from ${style2.pub}.`:"";
+  const commentsBlock=buildCommentsBlock(comments);
+  return `You are the social media editor at ${style.pub}${style2?" in collaboration with "+style2.pub:""}. Your publication voice is: ${style.voice}${style2?", blended with "+style2.voice:""}.\n\nAdapt the submitted article into a ${PLATFORM_RULES[platform].label} post that maintains the publication's distinctive voice while following the platform format rules precisely.\n\n${rules}${blendNote}${commentsBlock}${regenNote}`;
 }
 
-async function runArticleFormat(article,style,imgs,isRegen){
+async function runArticleFormat(article,style,style2,ratio,imgs,comments,isRegen){
   const elPlain=document.getElementById("plainBody"),elHtml=document.getElementById("htmlBody"),elMemo=document.getElementById("memoBody");
   const loading='<span class="loading-pulse">Editor is working...</span>';
   elPlain.innerHTML=loading;elHtml.innerHTML=loading;elMemo.innerHTML=loading;
   document.getElementById("regen-article").disabled=true;
   try{
-    const sys=buildArticlePrompt(style,imgs,isRegen);
+    const sys=buildArticlePrompt(style,style2,ratio,imgs,comments,isRegen);
     const imgCtx=imgs.length?"\n\nIMAGES:\n"+imgs.map(i=>`[${i.label}] caption: "${i.caption||"none"}" url: ${i.url||"placeholder"}`).join("\n"):"";
     const text=await callClaude(sys,"Please edit this article:"+imgCtx+"\n\nARTICLE:\n"+article);
     function splitOn(s,d){const i=s.indexOf(d);return i===-1?["",s]:[s.slice(0,i),s.slice(i+d.length)];}
@@ -560,14 +682,14 @@ async function runArticleFormat(article,style,imgs,isRegen){
   document.getElementById("regen-article").disabled=false;
 }
 
-async function runSocialFormat(platform,article,style,isRegen){
+async function runSocialFormat(platform,article,style,style2,ratio,comments,isRegen){
   const bodyEl=document.getElementById("social-body-"+platform);
   const regenEl=document.getElementById("social-regen-"+platform);
   if(!bodyEl)return;
   bodyEl.innerHTML='<span class="loading-pulse">Writing '+PLATFORM_RULES[platform].label+' post...</span>';
   if(regenEl)regenEl.disabled=true;
   try{
-    const sys=buildSocialPrompt(style,platform,isRegen);
+    const sys=buildSocialPrompt(style,style2,ratio,platform,comments,isRegen);
     const text=await callClaude(sys,"Please adapt this article into a "+PLATFORM_RULES[platform].label+" post:\n\n"+article);
     bodyEl.textContent=text.trim();
   }catch(e){bodyEl.textContent="Error: "+e.message;}
@@ -597,35 +719,39 @@ function buildSocialPanels(){
 
 async function runAll(){
   const article=document.getElementById("articleInput").value.trim();
+  const comments=document.getElementById("commentsInput").value.trim();
   const apiKey=getKey();
   if(!apiKey){setStatus("Please enter and save your Anthropic API key.");return;}
   if(!article){setStatus("Please paste a draft article first.");return;}
   if(!selectedStyle){setStatus("Please select a publication style first.");return;}
-  lastCtx={article,style:selectedStyle,imgs:[...images]};
+  lastCtx={article,style:selectedStyle,style2:selectedStyle2,ratio:blendRatio,imgs:[...images],comments};
   document.getElementById("runBtn").disabled=true;
   document.getElementById("outputSection").style.display="block";
   const hasArticle=selectedFormats.has("article");
   document.getElementById("articleOutputWrap").style.display=hasArticle?"block":"none";
   buildSocialPanels();
-  const promises=[];
-  if(hasArticle)promises.push(runArticleFormat(article,selectedStyle,images,false));
-  ["linkedin","twitter","whatsapp"].filter(f=>selectedFormats.has(f)).forEach(f=>{
-    promises.push(runSocialFormat(f,article,selectedStyle,false));
-  });
-  setStatus("Editing and publishing to "+promises.length+" format"+(promises.length>1?"s":"")+"...");
-  await Promise.all(promises);
-  document.getElementById("outputLabel").textContent="Edited to "+selectedStyle.pub+" Standards";
-  setStatus("Done \u2014 "+[...selectedFormats].length+" format"+(selectedFormats.size>1?"s":"")+" ready.");
+  const socialFmts=["linkedin","twitter","whatsapp"].filter(f=>selectedFormats.has(f));
+  const total=(hasArticle?1:0)+socialFmts.length;
+  const blendNote=selectedStyle2?" (blended with "+selectedStyle2.pub+" at "+blendRatio+"/"+(100-blendRatio)+"%)":"";
+  setStatus("Editing to "+selectedStyle.pub+blendNote+"...");
+  if(hasArticle){await runArticleFormat(article,selectedStyle,selectedStyle2,blendRatio,images,comments,false);}
+  for(let i=0;i<socialFmts.length;i++){
+    if(i>0)await sleep(700);
+    await runSocialFormat(socialFmts[i],article,selectedStyle,selectedStyle2,blendRatio,comments,false);
+  }
+  document.getElementById("outputLabel").textContent="Edited to "+selectedStyle.pub+(selectedStyle2?" x "+selectedStyle2.pub:"")+" Standards";
+  setStatus("Done \u2014 "+total+" format"+(total>1?"s":"")+" ready.");
   document.getElementById("runBtn").disabled=false;
 }
 
 async function regenFormat(fmt){
   if(!lastCtx){setStatus("Run the editor first before regenerating.");return;}
-  setStatus("Regenerating "+fmt+"...");
+  const comments=document.getElementById("commentsInput").value.trim()||lastCtx.comments||"";
+  setStatus("Regenerating "+fmt+(comments?" with your instructions":"")+"...");
   if(fmt==="article"){
-    await runArticleFormat(lastCtx.article,lastCtx.style,lastCtx.imgs,true);
+    await runArticleFormat(lastCtx.article,lastCtx.style,lastCtx.style2,lastCtx.ratio,lastCtx.imgs,comments,true);
   }else{
-    await runSocialFormat(fmt,lastCtx.article,lastCtx.style,true);
+    await runSocialFormat(fmt,lastCtx.article,lastCtx.style,lastCtx.style2,lastCtx.ratio,comments,true);
   }
   setStatus("Regenerated \u2014 fresh version ready.");
 }
@@ -637,11 +763,13 @@ async function copyOutput(id){
 
 function clearAll(){
   document.getElementById("articleInput").value="";
+  document.getElementById("commentsInput").value="";
   document.getElementById("outputSection").style.display="none";
   images=[];imgCounter=0;renderImages();
   document.getElementById("styleGuidePanel").classList.remove("open");
+  document.getElementById("blendPanel").classList.remove("open");
   document.querySelectorAll(".style-card").forEach(c=>c.classList.remove("selected"));
-  selectedStyle=null;lastCtx=null;setStatus("");
+  selectedStyle=null;lastCtx=null;clearBlend();setStatus("");
 }
 
 renderStyles();loadKey();updateFormatHint();
